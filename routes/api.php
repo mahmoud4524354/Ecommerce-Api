@@ -20,4 +20,8 @@ Route::apiResource('products', ProductController::class)->only([
 
 Route::middleware(['auth:sanctum', 'permission:create products'])->group(function () {
     Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+
+    Route::patch('products/{id}/restore', [ProductController::class, 'restore']);
+    Route::post('/products/{id}/forceDelete',[ProductController::class,'forceDelete']);
+    Route::get('/products/trashed', [ProductController::class,'trashed']);
 });

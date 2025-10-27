@@ -99,9 +99,41 @@ class ProductController extends Controller
         if (!$product) {
             return ApiResponse::sendError('Product not found.', 404);
         }
-        $product->delete();
+        $product->delete();  // soft delete
 
-        return ApiResponse::sendResponse(null , 'Product deleted successfully.');
+        return ApiResponse::sendResponse(null, 'Product soft deleted successfully.');
+    }
+
+    public function forceDelete(string $id)
+    {
+        $product = Product::withTrashed()->find($id);
+
+        if (!$product) {
+            return ApiResponse::sendError('Product not found.', 404);
+        }
+
+        $product->forceDelete();
+        return ApiResponse::sendResponse(null, 'Product deleted successfully.');
+    }
+
+
+    public function restore(string $id)
+    {
+        $product = Product::onlyTrashed()->find($id);
+
+        if (!$product) {
+            return ApiResponse::sendError('No deleted product found with this ID.', 404);
+        }
+
+        $product->restore();
+        return ApiResponse::sendResponse(null, 'Product restored successfully.');
+    }
+
+
+    public function trashed()
+    {
+        $products = Product::onlyTrashed()->get();
+        return ApiResponse::sendResponse(ProductResource::collection($products), 'Trashed products retrieved successfully.');
     }
 
 }
