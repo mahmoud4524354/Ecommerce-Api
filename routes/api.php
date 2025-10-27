@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -10,4 +11,13 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
     Route::get('/user', 'user')->middleware('auth:sanctum');
+});
+
+
+Route::apiResource('products', ProductController::class)->only([
+    'index', 'show'
+]);
+
+Route::middleware(['auth:sanctum', 'permission:create products'])->group(function () {
+    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
 });
