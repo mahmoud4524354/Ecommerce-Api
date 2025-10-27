@@ -18,4 +18,8 @@ class Product extends Model
     {
         return $this->stock > 0;
     }
+
+    public function categories(){
+        return $this->hasMany(Category::class);
+    }
 }
