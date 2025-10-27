@@ -16,7 +16,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $data = Product::all();
+        $data = Product::where('is_active', true)->get();
         return ApiResponse::sendResponse(ProductResource::collection($data), 'Products retrieved successfully.');
     }
 
@@ -59,7 +59,34 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $product = Product::find($id);
+
+        if (!$product) {
+            return ApiResponse::sendError('Product not found.', 404);
+        }
+
+        $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'price' => 'sometimes|required|numeric|min:0',
+            'stock' => 'sometimes|required|integer|min:0',
+            'sku' => 'sometimes|required|string|unique:products,sku,' . $product->id,
+            'description' => 'nullable|string',
+            'is_active' => 'boolean'
+        ]);
+
+        $product->update([
+            'name' => $request->name ?? $product->name,
+            'slug' => $request->name ? Str::slug($request->name) : $product->slug,
+            'description' => $request->description ?? $product->description,
+            'price' => $request->price ?? $product->price,
+            'stock' => $request->stock ?? $product->stock,
+            'sku' => $request->sku ?? $product->sku,
+            'is_active' => $request->is_active ?? $product->is_active,
+        ]);
+
+        $product->save();
+
+        return ApiResponse::sendResponse(new ProductResource($product), 'Product updated successfully.');
     }
 
     /**
@@ -67,6 +94,14 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $product = Product::find($id);
+
+        if (!$product) {
+            return ApiResponse::sendError('Product not found.', 404);
+        }
+        $product->delete();
+
+        return ApiResponse::sendResponse(null , 'Product deleted successfully.');
     }
+
 }
