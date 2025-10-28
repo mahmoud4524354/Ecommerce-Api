@@ -16,8 +16,30 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $data = Product::where('is_active', true)->get();
-        return ApiResponse::sendResponse(ProductResource::collection($data), 'Products retrieved successfully.');
+        $data = Product::where('is_active', true)->paginate(10);
+
+        if (count($data) > 0) {
+            if ($data->total() > $data->perPage()) {
+
+                $data = [
+                    'records' => ProductResource::collection($data),
+                    'pagination links' => [
+                        'current_page' => $data->currentPage(),
+                        'per_page' => $data->perPage(),
+                        'total' => $data->total(),
+                        'links' => [
+                            'first' => $data->url(1),
+                            'last_page' => $data->url($data->lastPage()),
+                        ],
+                    ],
+                ];
+
+            } else {
+                $data = ProductResource::collection($data);
+            }
+            return ApiResponse::sendResponse($data, 'Products retrieved successfully.');
+        }
+        return ApiResponse::sendResponse([], 'No Products Available');
     }
 
     /**
@@ -51,7 +73,13 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $product = Product::find($id);
+
+        if (!$product) {
+            return ApiResponse::sendError('Product not found.');
+        }
+
+        return ApiResponse::sendResponse(new ProductResource($product), 'Product retrieved successfully.');
     }
 
     /**
