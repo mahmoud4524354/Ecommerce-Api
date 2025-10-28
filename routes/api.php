@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductFilterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,10 @@ Route::middleware(['auth:sanctum', 'permission:create products'])->group(functio
     Route::apiResource('products', ProductController::class)->except(['index', 'show']);
 
     Route::patch('products/{id}/restore', [ProductController::class, 'restore']);
-    Route::post('/products/{id}/forceDelete',[ProductController::class,'forceDelete']);
-    Route::get('/products/trashed', [ProductController::class,'trashed']);
+    Route::post('/products/{id}/forceDelete', [ProductController::class, 'forceDelete']);
+    Route::get('/products/trashed', [ProductController::class, 'trashed']);
 });
+
+
+Route::get('/search', [ProductFilterController::class, 'search']);
+Route::get('/filter', [ProductFilterController::class, 'filteredProducts']);
