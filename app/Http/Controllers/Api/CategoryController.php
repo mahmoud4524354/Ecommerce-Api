@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -16,24 +17,36 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::where('is_active', true)->paginate(10);
 
-        if ($categories->isEmpty()) {
-            return ApiResponse::sendResponse([], 'No categories available.');
-        }
+        // Pagenation
 
-        $data = [
-            'records' => CategoryResource::collection($categories),
-            'pagination' => [
-                'current_page' => $categories->currentPage(),
-                'per_page' => $categories->perPage(),
-                'total' => $categories->total(),
-                'first_page_url' => $categories->url(1),
-                'last_page_url' => $categories->url($categories->lastPage()),
-            ],
-        ];
+//        $categories = Category::where('is_active', true)->paginate(10);
+//
+//        if ($categories->isEmpty()) {
+//            return ApiResponse::sendResponse([], 'No categories available.');
+//        }
+//
+//        $data = [
+//            'records' => CategoryResource::collection($categories),
+//            'pagination' => [
+//                'current_page' => $categories->currentPage(),
+//                'per_page' => $categories->perPage(),
+//                'total' => $categories->total(),
+//                'first_page_url' => $categories->url(1),
+//                'last_page_url' => $categories->url($categories->lastPage()),
+//            ],
+//        ];
+//
+//        return ApiResponse::sendResponse($data, 'Categories retrieved successfully.');
 
-        return ApiResponse::sendResponse($data, 'Categories retrieved successfully.');
+
+        // cache
+
+        $categories = cache::remember('categories', 3600, function () {
+            return Category::where('is_active', true)->with('products')->get();
+        });
+
+        return ApiResponse::sendResponse(CategoryResource::collection($categories), 'Categories retrieved successfully.');
     }
 
     /**
@@ -52,6 +65,7 @@ class CategoryController extends Controller
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
 
         $category = Category::create($data);
+        Cache::forget('categories');
 
         return ApiResponse::sendResponse(new CategoryResource($category), 'Category created successfully.', 201);
     }
@@ -61,11 +75,14 @@ class CategoryController extends Controller
      */
     public function show(string $id)
     {
-        $category = Category::find($id);
+        $category = Cache::remember("category_{$id}", 600, function () use ($id) {
+            return Category::with('products')->find($id);
+        });
 
         if (!$category) {
             return ApiResponse::sendError([], 'Category not found.', 404);
         }
+
 
         return ApiResponse::sendResponse(new CategoryResource($category), 'Category retrieved successfully.');
     }
@@ -93,6 +110,8 @@ class CategoryController extends Controller
         }
 
         $category->update($data);
+        Cache::forget('categories');
+        Cache::forget("category_{$id}");
 
         return ApiResponse::sendResponse(new CategoryResource($category), 'Category updated successfully.');
     }
@@ -104,11 +123,13 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        if(!$category){
+        if (!$category) {
             return ApiResponse::sendError('Category not found.', 404);
         }
 
         $category->delete();
+        Cache::forget('categories');
+        Cache::forget("category_{$id}");
 
         return ApiResponse::sendResponse([], 'Category deleted successfully.');
     }
