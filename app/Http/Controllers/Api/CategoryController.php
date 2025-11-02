@@ -103,6 +103,11 @@ class CategoryController extends Controller
     public function destroy(string $id)
     {
         $category = Category::findOrFail($id);
+
+        if(!$category){
+            return ApiResponse::sendError('Category not found.', 404);
+        }
+
         $category->delete();
 
         return ApiResponse::sendResponse([], 'Category deleted successfully.');

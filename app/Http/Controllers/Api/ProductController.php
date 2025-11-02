@@ -52,16 +52,27 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'sku' => 'required|string|unique:products',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+        $imageName = null;
+
+        if ($request->hasFile('image')) {
+
+            $image = $request->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads'), $imageName);
+        }
 
         $product = Product::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => Str::slug($request->name). '-' . uniqid(),
             'description' => $request->description,
             'price' => $request->price,
             'stock' => $request->stock,
             'sku' => $request->sku,
-            'is_active' => true
+            'is_active' => true,
+            'image' => url("uploads/" . $imageName),
         ]);
 
 
@@ -99,17 +110,31 @@ class ProductController extends Controller
             'stock' => 'sometimes|required|integer|min:0',
             'sku' => 'sometimes|required|string|unique:products,sku,' . $product->id,
             'description' => 'nullable|string',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'image' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+
+            if ($product->image && file_exists(public_path('uploads/' . basename($product->image)))) {
+                unlink(public_path('uploads/' . $product->image));
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads'), $imageName);
+        }
+
 
         $product->update([
             'name' => $request->name ?? $product->name,
-            'slug' => $request->name ? Str::slug($request->name) : $product->slug,
+            'slug' => $request->name ? Str::slug($request->name) . '-' . uniqid() : $product->slug,
             'description' => $request->description ?? $product->description,
             'price' => $request->price ?? $product->price,
             'stock' => $request->stock ?? $product->stock,
             'sku' => $request->sku ?? $product->sku,
             'is_active' => $request->is_active ?? $product->is_active,
+            'image' => url("uploads/" . $imageName),
         ]);
 
         $product->save();
@@ -127,6 +152,11 @@ class ProductController extends Controller
         if (!$product) {
             return ApiResponse::sendError('Product not found.', 404);
         }
+
+        if ($product->image && file_exists(public_path('uploads/' . $product->image))) {
+            unlink(public_path('uploads/' . $product->image));
+        }
+
         $product->delete();  // soft delete
 
         return ApiResponse::sendResponse(null, 'Product soft deleted successfully.');
@@ -138,6 +168,10 @@ class ProductController extends Controller
 
         if (!$product) {
             return ApiResponse::sendError('Product not found.', 404);
+        }
+
+        if ($product->image && file_exists(public_path($product->image))) {
+            unlink(public_path('uploads/' . $product->image));
         }
 
         $product->forceDelete();

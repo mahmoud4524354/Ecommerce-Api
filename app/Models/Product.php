@@ -11,7 +11,7 @@ class Product extends Model
     use HasFactory, softDeletes;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'price', 'stock', 'sku', 'is_active'
+        'name', 'slug', 'description', 'price', 'stock', 'sku', 'is_active','image'
     ];
 
     public function inStock()
