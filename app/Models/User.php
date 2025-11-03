@@ -20,11 +20,10 @@ class User extends Authenticatable
         return $this->hasOne(Cart::class);
     }
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    public function orders() {
+        return $this->hasMany(Order::class);
+    }
+
     protected $fillable = [
         'name',
         'email',

@@ -78,9 +78,9 @@ class CartController extends Controller
     }
 
 
-    public function clearCart(Cart $cart)
+    public function clearCart()
     {
-        $cart->where('user_id', Auth::id())->first();
+        $cart = Cart::where('user_id', Auth::id())->first();
 
         if ($cart) {
             $cart->items()->delete();

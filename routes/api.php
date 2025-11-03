@@ -2,9 +2,9 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductFilterController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -41,3 +41,8 @@ Route::middleware('auth:sanctum')->controller(CartController::class)->group(func
     Route::post('/cart/clear', 'clearCart');
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/checkout', [CheckoutController::class, 'checkout']);
+    Route::get('/orders', [CheckoutController::class, 'orderHistory']);
+    Route::get('/orders/{orderId}', [CheckoutController::class, 'orderDetails']);
+});
