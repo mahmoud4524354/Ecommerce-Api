@@ -62,7 +62,7 @@ class CategoryController extends Controller
             'is_active' => 'nullable|boolean'
         ]);
 
-        $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+        $data['slug'] = $data['slug'] ?? Str::slug($data['name']) . '-' . uniqid();
 
         $category = Category::create($data);
         Cache::forget('categories');
@@ -106,7 +106,7 @@ class CategoryController extends Controller
         ]);
 
         if (isset($data['slug'])) {
-            $data['slug'] = Str::slug($data['slug']);
+            $data['slug'] = Str::slug($data['slug']) . '-' . uniqid();
         }
 
         $category->update($data);

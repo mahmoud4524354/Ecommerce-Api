@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductFilterController;
 use Illuminate\Http\Request;
@@ -20,7 +21,6 @@ Route::apiResource('products', ProductController::class)->only([
 ]);
 
 Route::middleware(['auth:sanctum', 'permission:create products'])->group(function () {
-    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
 
     Route::patch('products/{id}/restore', [ProductController::class, 'restore']);
     Route::post('/products/{id}/forceDelete', [ProductController::class, 'forceDelete']);
@@ -30,3 +30,19 @@ Route::middleware(['auth:sanctum', 'permission:create products'])->group(functio
 
 Route::get('/search', [ProductFilterController::class, 'search']);
 Route::get('/filter', [ProductFilterController::class, 'filteredProducts']);
+Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+
+
+Route::middleware('auth:sanctum')->controller(CartController::class)->group(function () {
+    Route::get('/cart', 'index');
+    Route::post('/cart', 'addToCart');
+    Route::patch('/cart/item/{itemId}', 'updateCartItems');
+    Route::delete('/cart/item/{itemId}', 'removeItem');
+    Route::post('/cart/clear', 'clearCart');
+});
+
+
+//
+//Route::middleware('auth:sanctum')->group(function() {
+//    Route::post('/cart', [CartController::class, 'addToCart']);
+//});
