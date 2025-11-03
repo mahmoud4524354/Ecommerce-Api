@@ -80,7 +80,7 @@ class CartController extends Controller
 
     public function clearCart(Cart $cart)
     {
-        $cart = Cart::where('user_id', Auth::id())->first();
+        $cart->where('user_id', Auth::id())->first();
 
         if ($cart) {
             $cart->items()->delete();

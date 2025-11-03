@@ -41,8 +41,3 @@ Route::middleware('auth:sanctum')->controller(CartController::class)->group(func
     Route::post('/cart/clear', 'clearCart');
 });
 
-
-//
-//Route::middleware('auth:sanctum')->group(function() {
-//    Route::post('/cart', [CartController::class, 'addToCart']);
-//});
