@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CheckoutRequest;
@@ -57,7 +59,7 @@ class CheckoutController extends Controller
         try {
             $order = new Order([
                 'user_id' => $user->id,
-                'status' => 'pending',
+                'status' => OrderStatus::PENDING, // Using enum
                 'shipping_name' => $request->shipping_name,
                 'shipping_address' => $request->shipping_address,
                 'shipping_city' => $request->shipping_city,
@@ -70,7 +72,7 @@ class CheckoutController extends Controller
                 'shipping_cost' => $shippingCost,
                 'total' => $total,
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'pending',
+                'payment_status' => PaymentStatus::PENDING, // Using enum
                 'order_number' => Order::generateOrderNumber(),
                 'notes' => $request->notes,
             ]);

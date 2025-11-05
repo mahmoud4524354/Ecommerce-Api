@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductFilterController;
 use Illuminate\Support\Facades\Route;
@@ -46,3 +47,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [CheckoutController::class, 'orderHistory']);
     Route::get('/orders/{orderId}', [CheckoutController::class, 'orderDetails']);
 });
+
+
+
+// Payment routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Create payment (Stripe, PayPal, or other providers)
+    Route::post('/orders/{order}/payments', [PaymentController::class, 'createPayment']);
+
+    // Confirm payment status
+    Route::get('/payments/{paymentId}/confirm', [PaymentController::class, 'confirmPayment']);
+});
+
+// PayPal callback routes (no authentication required)
+Route::get('/payments/paypal/success', [PaymentController::class, 'paypalSuccess'])
+    ->name('paypal.success');
+Route::get('/payments/paypal/cancel', [PaymentController::class, 'paypalCancel'])
+    ->name('paypal.cancel');
+
+// Webhook endpoints (no authentication required)
+Route::post('/webhooks/stripe', [PaymentController::class, 'stripeWebhook'])
+    ->name('webhook.stripe')
+    ->withoutMiddleware(['auth:sanctum', 'throttle']);

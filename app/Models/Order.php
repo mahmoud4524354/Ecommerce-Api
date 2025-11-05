@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -11,8 +13,15 @@ class Order extends Model
         'shipping_city', 'shipping_state', 'shipping_zipcode',
         'shipping_country', 'shipping_phone', 'subtotal', 'tax',
         'shipping_cost', 'total', 'payment_method', 'payment_status',
-        'order_number', 'notes',
+        'transaction_id', 'paid_at', 'order_number', 'notes',
     ];
+
+    protected $casts = [
+        'status' => OrderStatus::class,
+        'payment_status' => PaymentStatus::class,
+        'paid_at' => 'datetime',
+    ];
+
 
     public function user()
     {
@@ -35,4 +44,25 @@ class Order extends Model
     {
         return in_array($this->status, ['pending', 'paid']);
     }
+
+    public function markAsPaid(string $transactionId): void
+    {
+        $this->update([
+            'status' => OrderStatus::PAID,
+            'payment_status' => PaymentStatus::COMPLETED,
+            'transaction_id' => $transactionId,
+            'paid_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark payment as failed
+     */
+    public function markPaymentFailed(): void
+    {
+        $this->update([
+            'payment_status' => PaymentStatus::FAILED,
+        ]);
+    }
+
 }

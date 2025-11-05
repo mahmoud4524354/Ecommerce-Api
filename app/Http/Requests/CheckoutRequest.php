@@ -29,7 +29,7 @@ class CheckoutRequest extends FormRequest
             'shipping_zipcode' => 'required|string|max:20',
             'shipping_country' => 'required|string|max:255',
             'shipping_phone' => 'required|string|max:20',
-            'payment_method' => 'required|in:credit_card,paypal',
+            'payment_method' => 'required|in:stripe,paypal', // Simplified for now
             'notes' => 'nullable|string',
         ];
     }
