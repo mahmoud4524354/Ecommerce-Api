@@ -11,6 +11,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
+use App\Notifications\OrderConfirmationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -86,6 +87,8 @@ class CheckoutController extends Controller
 
             $user->cartItems()->delete();
             DB::commit();
+
+            $order->user->notify(new OrderConfirmationNotification($order));
 
             return ApiResponse::sendResponse($order->load('items.product'), 'Order created successfully', 201);
 

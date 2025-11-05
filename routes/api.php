@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\OrderManagementController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductFilterController;
@@ -69,3 +70,14 @@ Route::get('/payments/paypal/cancel', [PaymentController::class, 'paypalCancel']
 Route::post('/webhooks/stripe', [PaymentController::class, 'stripeWebhook'])
     ->name('webhook.stripe')
     ->withoutMiddleware(['auth:sanctum', 'throttle']);
+
+
+
+// Admin-only order management routes
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    // Order management endpoints
+    Route::get('/admin/orders', [OrderManagementController::class, 'index']);
+    Route::get('/admin/orders/{order}', [OrderManagementController::class, 'show']);
+    Route::patch('/admin/orders/{order}/status', [OrderManagementController::class, 'updateStatus']);
+    Route::post('/admin/orders/{order}/cancel', [OrderManagementController::class, 'cancel']);
+});
