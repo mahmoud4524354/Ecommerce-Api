@@ -11,6 +11,7 @@ A robust RESTful API for e-commerce applications built with Laravel. This API pr
 - **Payment Integration** - Support for multiple payment gateways
 - **User Profiles** - Customer account management and order history
 - **Search & Filtering** - Advanced product search and filtering capabilities
+- **Notification System** (Events, Listeners, and Laravel Notifications)
 
 ## ⚙️ Installation
 
